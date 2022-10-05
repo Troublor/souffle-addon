@@ -2,9 +2,13 @@ UNAME := $(shell uname -s)
 ifeq ($(UNAME),Linux)
 	GXX := g++
 	GCC := gcc
+# rudimentary
+all: libsoufflenum.so num_tests mappings_tests keccak256_tests
 else
 	GXX := g++-11 -I /usr/local/include
 	GCC := gcc-11 -I /usr/local/include
+# rudimentary
+all: libsoufflenum.so libfunctors.dylib num_tests mappings_tests keccak256_tests
 endif
 
 KECCAK_DIR := keccak
@@ -13,12 +17,11 @@ KECCAK_OBJ := $(patsubst $(KECCAK_DIR)/%.c,$(KECCAK_DIR)/%.o, $(KECCAK_SRC))
 
 .PHONY: clean softclean
 
-# rudimentary
-all: libsoufflenum.so num_tests mappings_tests keccak256_tests
-
 libsoufflenum.so: $(KECCAK_OBJ) num256.o mappings.o keccak256.o
 	$(GXX) -std=c++17 -shared -o libsoufflenum.so $(KECCAK_OBJ) num256.o mappings.o keccak256.o -march=native
 	ln -sf libsoufflenum.so libfunctors.so
+
+libfunctors.dylib: $(KECCAK_OBJ) num256.o mappings.o keccak256.o
 	$(GXX) -dynamiclib -install_name libfunctors.dylib -o libfunctors.dylib $(KECCAK_OBJ) num256.o mappings.o keccak256.o
 
 num256.o: num256.cpp
